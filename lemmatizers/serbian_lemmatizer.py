@@ -1,6 +1,6 @@
 from collections import Counter
 import classla
-from .BaseLemmatizer import BaseLemmatizer
+from .base_lemmatizer import BaseLemmatizer
 
 class ClasslaLemmatizer(BaseLemmatizer):
     def __init__(self, language='serbian'):

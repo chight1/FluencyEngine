@@ -2,7 +2,7 @@
 import subprocess
 import json
 from collections import Counter
-from .BaseLemmatizer import BaseLemmatizer
+from .base_lemmatizer import BaseLemmatizer
 import os
 
 class KazakhLemmatizer(BaseLemmatizer):

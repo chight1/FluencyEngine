@@ -1,9 +1,9 @@
 import os
 import time
-from dbLink import dbLink
-from ttsLink import speak_sentence
-from textHelpers import get_helper_text
-from gptLink import get_practice_sentence, get_definitions, translate
+from db_link import dbLink
+from tts_link import speak_sentence
+from text_helpers import get_helper_text
+from gpt_link import get_practice_sentence, get_definitions, translate
 from datetime import datetime, timedelta
 from lemmatizers import get_lemmatizer
 from db_backup import upload_backup

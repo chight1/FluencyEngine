@@ -1,7 +1,7 @@
 import spacy
 import re
 from collections import Counter
-from .BaseLemmatizer import BaseLemmatizer
+from .base_lemmatizer import BaseLemmatizer
 
 MODELS = {
     'english': 'en_core_web_sm',

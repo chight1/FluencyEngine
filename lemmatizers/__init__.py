@@ -1,21 +1,21 @@
-from .SpacyLemmatizer import SpacyLemmatizer
-from .PersianLemmatizer import PersianLemmatizer
-from .ClasslaLemmatizer import ClasslaLemmatizer
-from .ChineseLemmatizer import ChineseLemmatizer
-from .KazakhLemmatizer import KazakhLemmatizer
+from .spacy_lemmatizer import SpacyLemmatizer
+from .persian_lemmatizer import PersianLemmatizer
+from .serbian_lemmatizer import ClasslaLemmatizer
+from .chinese_lemmatizer import ChineseLemmatizer
+from .kazakh_lemmatizer import KazakhLemmatizer
 
 def get_lemmatizer(language):
     language = language.lower()
     if language == 'persian':
-        return PersianLemmatizer(language)
+        return persian_lemmatizer(language)
     if language == 'serbian':
-        return ClasslaLemmatizer(language)
+        return serbian_lemmatizer(language)
     if language == 'chinese':
-        return ChineseLemmatizer(language)
+        return chinese_lemmatizer(language)
     if language in {'english', 'japanese', 'russian', 'spanish', 'french', 'german', 'portuguese'}:
-        return SpacyLemmatizer(language)
+        return spacy_lemmatizer(language)
     if language == 'kazakh':
-        from .KazakhLemmatizer import KazakhLemmatizer
-        return KazakhLemmatizer(language)
+        from .kazakh_lemmatizer import KazakhLemmatizer
+        return kazakh_lemmatizer(language)
     else:
         raise ValueError(f"No lemmatizer available for {language}")
