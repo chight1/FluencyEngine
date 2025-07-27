@@ -4,7 +4,10 @@ from datetime import datetime, timedelta
 
 class dbLink:
     def __init__(self, language='japanese', db_file="fluency_progress.db"):
-        self.conn = sqlite3.connect(db_file)
+        # Ensure the database file is always relative to the script's directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(base_dir, db_file)
+        self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
         self.language = language
         self._initialize_db()

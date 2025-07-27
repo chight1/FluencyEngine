@@ -6,19 +6,17 @@ from textHelpers import get_helper_text
 from gptLink import get_practice_sentence, get_definitions, translate
 from datetime import datetime, timedelta
 from lemmatizers import get_lemmatizer
+from db_backup import upload_backup
 
 
 SUPPORTED_LANGUAGES = ["japanese", "chinese", "english", "russian", "spanish", "french", "german", "portuguese",
                        "arabic", "hindi", "indonesian", "malay", "turkish", "vietnamese", "serbian", "persian", "kazakh"]
 
+# Get the next sentence based on if the user is reviewing a lemma or not
 def get_next_sentence(db, language, lemmatizer):
-    """
-    Fetch the next sentence based on the learning status of lemmas.
-    """
     next_lemma = db.get_next_lemma()
     reviewing_lemma = db.get_reviewing_lemma()
     practice_sentence = get_practice_sentence(language, next_lemma, db.get_total_lemmas(), reviewing_lemma)
-    # Lemmatize explicitly once here
     lemma_counts = lemmatizer.get_lemma_counts(practice_sentence)
 
     return {
@@ -28,7 +26,8 @@ def get_next_sentence(db, language, lemmatizer):
         'reviewing_lemma': reviewing_lemma,
     }
 
-
+# Upsert the progress of the user based on their input
+# Updates the next review date based on the difficulty selected
 def update_progress(db, sentence, difficulty, lemma_counts):
     difficulties = {'easy': 1.3, 'medium': 1.0, 'hard': 0.7}
     base_intervals = [1, 3, 7, 14, 30, 60]
@@ -49,7 +48,19 @@ def update_progress(db, sentence, difficulty, lemma_counts):
 
     db.update_progress(lemma_updates, sentence)
 
+# Handle diplaying menu options and executing actions
+def handle_menu_display(user_input, actions, sentence_displayed):
+    if user_input in actions:
+        actions[user_input]()
+        if user_input not in ['1', '2', '3', 'del', 'd']:
+            print(sentence_displayed)
+        return user_input in ['1', '2', '3', 'del']
+    print("Invalid option. Choose again.")
+    return False
 
+
+# Run the learning session for the selected language
+# This is the main loop that will keep running until the user decides to exit
 def run_learning_session(db, language):
     try:
         lemmatizer = get_lemmatizer(language)
@@ -58,12 +69,6 @@ def run_learning_session(db, language):
         print("Please select another language.")
         return  # Return to main to re-select language
 
-    print(f"Initialized lemmatizer for {language}.")
-    print(f"Running learning session for '{language}'...")
-
-    # Rest of your original function...
-
-    lemmatizer = get_lemmatizer(language)
     print(f"Initialized lemmatizer for {language}.")
     print(f"Running learning session for '{language}'...")
 
@@ -76,7 +81,8 @@ def run_learning_session(db, language):
         "  [1] - Easy\n"
         "  [2] - Medium\n"
         "  [3] - Hard\n"
-        "  [exit] - Exit session\n"
+        "  [menu] - Return to main menu\n"
+        "  [exit] - Backup and close application\n"
         "  [Enter] - Skip to next sentence\n"
     )
 
@@ -101,7 +107,7 @@ def run_learning_session(db, language):
             'r': lambda: speak_sentence(cur_sentence, language=language),
             't': lambda: print(f"Translation: {translate(cur_sentence, language, 'English')}"),
             'p': lambda: print(f"Pronunciation: {get_helper_text(cur_sentence, language, 'pronunciation')}"),
-            'd': lambda: print(get_definitions(lemma_counts.keys(), language).replace('\n\n', '\n') + '\n\n' + cur_sentence),
+            'd': lambda: print(cur_sentence_with_definitions),
             '1': lambda: update_progress(db, cur_sentence, 'easy', lemma_counts),
             '2': lambda: update_progress(db, cur_sentence, 'medium', lemma_counts),
             '3': lambda: update_progress(db, cur_sentence, 'hard', lemma_counts),
@@ -110,23 +116,22 @@ def run_learning_session(db, language):
 
         while True:
             user_input = input(f"{option_text}\nChoose an option: ").strip().lower()
-            os.system('cls' if os.name == 'nt' else 'clear')
 
             if user_input == '':
                 break
-            elif user_input == 'exit':
-                print("Learning session ended by user.")
+            if user_input == 'menu':
+                print("Returning to main menu.")
                 return
-            elif user_input in actions:
-                if user_input not in ['1', '2', '3', 'd']:
-                    print(cur_sentence_with_definitions)
-                actions[user_input]()
-                if user_input in ['1', '2', '3', 'del']:
-                    break # Exit the inner loop after updating progress to move to the next sentence
-            else:
-                print("Invalid option. Choose again.")
+            if user_input == 'exit':
+                print("Backing up database and exiting.")
+                upload_backup()
+                exit()
 
+            should_break = handle_menu_display(user_input, actions, cur_sentence_with_definitions)
+            if should_break:
+                break
 
+# Entry point for selecting languages and initiating learning sessions.
 def main():
     while True:
         try:
