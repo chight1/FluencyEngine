@@ -104,11 +104,15 @@ def run_learning_session(db, language):
         print(cur_sentence_with_definitions)
         speak_sentence(cur_sentence, language=language)
 
+        def print_definitions():
+            definitions = get_definitions(list(lemma_counts.keys()), language).replace('\n\n','\n')
+            print(f"{definitions}\n\n{cur_sentence}")
+
         actions = {
             'r': lambda: speak_sentence(cur_sentence, language=language),
             't': lambda: print(f"Translation: {translate(cur_sentence, language, 'English')}"),
             'p': lambda: print(f"Pronunciation: {get_helper_text(cur_sentence, language, 'pronunciation')}"),
-            'd': lambda: print(cur_sentence_with_definitions),
+            'd': lambda: print_definitions(),
             '1': lambda: update_progress(db, cur_sentence, 'easy', lemma_counts),
             '2': lambda: update_progress(db, cur_sentence, 'medium', lemma_counts),
             '3': lambda: update_progress(db, cur_sentence, 'hard', lemma_counts),

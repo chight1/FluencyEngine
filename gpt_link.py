@@ -69,7 +69,7 @@ def get_practice_sentence(language, lemma=None, lemmas_seen=0, reviewing_lemma=N
     lemma_part = (
         f"The user is currently reviewing the lemma '{lemma}', provide a sentence using '{lemma}' in context."
         if lemma else
-        f"The user has just started reviewing the lemma '{reviewing_lemma}'. Do not use '{reviewing_lemma}' in the sentence, but provide a sentence around that level that might show the user a new word."
+        f"The user has just started reviewing the lemma '{reviewing_lemma}'. Do not use '{reviewing_lemma}' in the sentence, but provide a sentence around that level that will definitely show the user one word that is new; don't worry about the word being a little above their level."
     )
 
     current_skill_level = get_difficulty_level(lemmas_seen)
