@@ -2,6 +2,7 @@ import random
 import openai
 import os
 import json
+import bisect
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -19,10 +20,47 @@ def prompt(system, user, temp, max_tokens):
         temperature=temp,
         max_tokens=max_tokens,
     )
-    return response.choices[0].message.content
+    choices = response.choices
+    if not choices:
+        raise RuntimeError("No response received from OpenAI.")
+    return choices[0].message.content
 
-def get_practice_sentence(language, lemma=None, lemmas_seen=None, reviewing_lemma=None):
-    prompt_list = LANGUAGE_PROMPTS.get(language.lower(), [])
+skill_lemma_thresholds = [
+    50, 100, 200, 350, 500, 750, 1000, 1500, 2000, 
+    2500, 3000, 4000, 5000, 6500, 8000, 10000, 
+    12500, 15000, 17500, 20000
+]
+
+skill_levels = [
+    "Absolute Beginner",
+    "Novice",
+    "Beginner",
+    "Upper Beginner",
+    "Elementary",
+    "Upper Elementary",
+    "Lower Intermediate",
+    "Intermediate",
+    "Upper Intermediate",
+    "Lower Advanced",
+    "Advanced",
+    "Upper Advanced",
+    "Highly Advanced",
+    "Lower Expert",
+    "Expert",
+    "Upper Expert",
+    "Near-Native",
+    "Lower Near-Native",
+    "Upper Near-Native",
+    "Native-Like Fluency",
+    "Educated Native Fluency"
+]
+
+def get_difficulty_level(total_lemmas_seen):
+    index = bisect.bisect_right(skill_lemma_thresholds, total_lemmas_seen)
+    return skill_levels[min(index, len(skill_levels)-1)] # min to avoid index error when total lemmas is over 20k
+
+def get_practice_sentence(language, lemma=None, lemmas_seen=0, reviewing_lemma=None):
+    prompt_list = LANGUAGE_PROMPTS.get(language.lower())
     if prompt_list:
         lang_prompt = random.choice(prompt_list)
     else:
@@ -34,9 +72,11 @@ def get_practice_sentence(language, lemma=None, lemmas_seen=None, reviewing_lemm
         f"The user has just started reviewing the lemma '{reviewing_lemma}'. Do not use '{reviewing_lemma}' in the sentence, but provide a sentence around that level that might show the user a new word."
     )
 
+    current_skill_level = get_difficulty_level(lemmas_seen)
+
     system_prompt = (
         f"{lang_prompt}\n{lemma_part}\n"
-        f"The sentence must match the user's current vocabulary level of roughly {lemmas_seen} lemmas and their assumed grammar proficiency. "
+        f"The sentence must match the user's current skill level of {current_skill_level}. "
         "Always vary the context, phrasing, and scenario. "
         f"Do not include non-{language} words, pronunciation guides, definitions, greetings, or tiny sentences of one or two words. Provide only full sentences."
     )
