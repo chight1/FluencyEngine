@@ -51,9 +51,10 @@ def update_progress(db, sentence, difficulty, lemma_counts):
 # Handle diplaying menu options and executing actions
 def handle_menu_display(user_input, actions, sentence_displayed):
     if user_input in actions:
-        actions[user_input]()
+        os.system('cls' if os.name == 'nt' else 'clear')
         if user_input not in ['1', '2', '3', 'del', 'd']:
             print(sentence_displayed)
+        actions[user_input]() # Translation etc goes after the sentence is displayed
         return user_input in ['1', '2', '3', 'del']
     print("Invalid option. Choose again.")
     return False
