@@ -23,4 +23,6 @@ def get_lemmatizer(language):
     if not lemmatizer_class:
         raise ValueError(f"No lemmatizer available for language '{language}'.")
     
+    if(lemmatizer_class == SpacyLemmatizer):
+        return lemmatizer_class(language=language)
     return lemmatizer_class()
