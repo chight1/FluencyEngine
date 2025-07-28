@@ -143,14 +143,28 @@ def main():
     while True:
         try:
             print("Select a language:")
-            for idx, lang in enumerate(SUPPORTED_LANGUAGES, 1):
+            # Build stat list
+            lang_stats = []
+            for lang in SUPPORTED_LANGUAGES:
                 db_temp = dbLink(lang)
-                total = db_temp.get_total_lemmas()
-                learned = db_temp.get_learned_lemmas_count()
-                learning = db_temp.get_learning_lemmas_count()
-                due = db_temp.get_due_lemmas()
-                print(f"{idx}. {lang.capitalize()}\t(Total: {total}, Learned: {learned}, Learning: {learning}, Due: {due})")
+                stats = {
+                    'language': lang,
+                    'total': db_temp.get_total_lemmas(),
+                    'learned': db_temp.get_learned_lemmas_count(),
+                    'learning': db_temp.get_learning_lemmas_count(),
+                    'due': db_temp.get_due_lemmas()
+                }
                 db_temp.close()
+                lang_stats.append(stats)
+
+            # Sort by total lemmas (desc), then alphabetically
+            lang_stats.sort(key=lambda x: (-x['total'], x['language']))
+
+            # Print sorted list
+            for idx, stat in enumerate(lang_stats, 1):
+                lang = stat['language']
+                print(f"{idx}. {lang.capitalize()}\t(Total: {stat['total']}, Learned: {stat['learned']}, Learning: {stat['learning']}, Due: {stat['due']})")
+
 
             choice = int(input("Enter the number corresponding to your choice: "))
 
