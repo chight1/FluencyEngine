@@ -28,7 +28,9 @@ def get_next_sentence(db, language, lemmatizer):
 
 # Upsert the progress of the user based on their input
 # Updates the next review date based on the difficulty selected
-def update_progress(db, sentence, difficulty, lemma_counts):
+def update_progress(db, sentence, difficulty, lemma_counts, cur_lemma):
+    if cur_lemma and cur_lemma not in lemma_counts:
+        lemma_counts[cur_lemma] = 1
     difficulties = {'easy': 1.3, 'medium': 1.0, 'hard': 0.7}
     base_intervals = [1, 3, 7, 14, 30, 60]
 
@@ -113,9 +115,9 @@ def run_learning_session(db, language):
             't': lambda: print(f"Translation: {translate(cur_sentence, language, 'English')}"),
             'p': lambda: print(f"Pronunciation: {get_helper_text(cur_sentence, language, 'pronunciation')}"),
             'd': lambda: print_definitions(),
-            '1': lambda: update_progress(db, cur_sentence, 'easy', lemma_counts),
-            '2': lambda: update_progress(db, cur_sentence, 'medium', lemma_counts),
-            '3': lambda: update_progress(db, cur_sentence, 'hard', lemma_counts),
+            '1': lambda: update_progress(db, cur_sentence, 'easy', lemma_counts, cur_lemma),
+            '2': lambda: update_progress(db, cur_sentence, 'medium', lemma_counts, cur_lemma),
+            '3': lambda: update_progress(db, cur_sentence, 'hard', lemma_counts, cur_lemma),
             'del': lambda: db.delete_lemma(cur_lemma),
         }
 
