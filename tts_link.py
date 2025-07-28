@@ -58,9 +58,9 @@ def play_audio_file(filename):
 
 if __name__ == "__main__":
     # Example usage
+    speak_sentence("君と一緒に図書館へ行きます。", language="Japanese")
     speak_sentence("Hello, this is a test sentence.", language="English")
     speak_sentence("你好，这是一个测试句子。", language="Chinese")
-    speak_sentence("こんにちは、これはテスト文です。", language="Japanese")
     speak_sentence("Привет, это тестовое предложение.", language="Russian")
     speak_sentence("Hola, esta es una frase de prueba.", language="Spanish")
     speak_sentence("Hallo, dies ist ein Testsatz.", language="German")
