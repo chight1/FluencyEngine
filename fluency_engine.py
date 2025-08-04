@@ -51,15 +51,26 @@ def update_progress(db, sentence, difficulty, lemma_counts, cur_lemma):
     db.update_progress(lemma_updates, sentence)
 
 # Handle diplaying menu options and executing actions
-def handle_menu_display(user_input, actions, sentence_displayed):
+def handle_menu_display(user_input, actions, sentence_displayed, db):
     if user_input in actions:
         os.system('cls' if os.name == 'nt' else 'clear')
         if user_input not in ['1', '2', '3', 'del', 'd']:
+            print_language_stats(db)
             print(sentence_displayed)
         actions[user_input]() # Translation etc goes after the sentence is displayed
         return user_input in ['1', '2', '3', 'del']
     print("Invalid option. Choose again.")
     return False
+
+def print_language_stats(db):
+    stats = {
+        'total': db.get_total_lemmas(),
+        'learned': db.get_learned_lemmas_count(),
+        'learning': db.get_learning_lemmas_count(),
+        'due': db.get_due_lemmas()
+    }
+    print(f"{db.language.capitalize()}\t(Total: {stats['total']}, Learned: {stats['learned']}, Learning: {stats['learning']}, Due: {stats['due']})")
+
 
 
 # Run the learning session for the selected language
@@ -103,6 +114,7 @@ def run_learning_session(db, language):
         print(f"lemma_counts: {lemma_counts}")
         print(f"Current lemma: {cur_lemma}")
         print(f"Lemma for difficulty context: {partially_learned_lemma}")
+        print_language_stats(db)
         print(cur_sentence_with_definitions)
         speak_sentence(cur_sentence, language=language)
 
@@ -134,7 +146,7 @@ def run_learning_session(db, language):
                 upload_backup()
                 exit()
 
-            should_break = handle_menu_display(user_input, actions, cur_sentence_with_definitions)
+            should_break = handle_menu_display(user_input, actions, cur_sentence_with_definitions, db)
             if should_break:
                 break
 
@@ -168,8 +180,8 @@ def main():
 
             choice = int(input("Enter the number corresponding to your choice: "))
 
-            if 1 <= choice <= len(SUPPORTED_LANGUAGES):
-                language = SUPPORTED_LANGUAGES[choice - 1]
+            if 1 <= choice <= len(lang_stats):
+                language = lang_stats[choice - 1]['language']
                 db = dbLink(language=language)
                 run_learning_session(db, language)
                 db.close()
